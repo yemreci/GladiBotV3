@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller / Executable build artifacts
+build/
+dist/
+*.spec
+
+# User runtime configuration & local profiles
+bot_config.json
+
+# Virtual Environments
+env/
+venv/
+ENV/
+.venv/
+.env
+
+# IDE / Editor configuration
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Operating System artifacts
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+*.log

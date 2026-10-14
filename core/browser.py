@@ -1,7 +1,7 @@
 import random
 import time
-from typing import Optional, List
-from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext, TimeoutError as PlaywrightTimeoutError
+from typing import Optional, List, Any, Union
+from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext, Locator, TimeoutError as PlaywrightTimeoutError
 
 class BrowserManager:
     """Manages the Playwright browser lifecycle, tabs, and human-like interactions."""
@@ -13,12 +13,23 @@ class BrowserManager:
         self.context: Optional[BrowserContext] = None
         self.game_page: Optional[Page] = None
         self.tracked_pages: List[Page] = []
+        self.log_callback = None
         self._is_initialized = False
+
+    def log(self, message: str, level: str = "INFO"):
+        """Logs a message to the UI console and stdout."""
+        if self.log_callback:
+            try:
+                self.log_callback(message, level)
+            except Exception:
+                pass
+        print(f"[{level}] {message}")
 
     def initialize(self, log_callback=None):
         """Starts Playwright and launches the browser."""
-        if log_callback:
-            log_callback("Launching Chrome browser...", "INFO")
+        self.log_callback = log_callback
+        if self.log_callback:
+            self.log("Launching Chrome browser...", "INFO")
 
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch(
@@ -206,13 +217,17 @@ class BrowserManager:
                 time.sleep(step)
             elapsed += step
 
-    def human_move_and_click(self, page: Page, selector: str, pause_checker=None) -> bool:
+    def human_move_and_click(self, page: Page, target: Any, pause_checker=None) -> bool:
         """Simulates realistic human mouse movement with bezier-like steps and randomized clicking."""
         if pause_checker and not pause_checker():
             return False
 
         try:
-            element = page.locator(selector).first
+            if isinstance(target, str):
+                element = page.locator(target).first
+            else:
+                element = target.first if hasattr(target, "first") else target
+
             if not element.is_visible():
                 return False
 

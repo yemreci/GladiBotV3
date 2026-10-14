@@ -34,7 +34,7 @@ A modular, event-driven automation framework and desktop application for *Gladia
 | Module | Status | Priority | Description |
 | :--- | :---: | :---: | :--- |
 | **Expedition** | 🟢 **Stable** | Priority 3 | Automated navigation, cooldown tracking, mob targeting, and reward/loot handling. |
-| **Dungeon** | 🟡 *In Progress* | Priority 4 | Dungeon room progression and mob/boss combat *(Blueprint template ready)*. |
+| **Dungeon** | 🟢 **Stable** | Priority 4 | Automated room progression via `map_label`, `dif2` initiation, loot selector, and optional "Restart on Loss". |
 | **Auto-Heal** | 🟡 *In Progress* | Priority 1 | Real-time HP monitoring and automatic food/potion consumption *(Blueprint template ready)*. |
 | **Auction House** | 🟡 *In Progress* | Priority 2 | Watcher for expiring items and automated bidding within gold thresholds *(Blueprint template ready)*. |
 

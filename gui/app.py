@@ -33,7 +33,8 @@ class GladiBotApp(tk.Tk):
             target_mob_index=self.config.expedition_mob_index
         )
         self.dungeon_module = DungeonModule(
-            enabled=self.config.dungeon_enabled
+            enabled=self.config.dungeon_enabled,
+            restart_on_loss=self.config.dungeon_restart_on_loss
         )
         self.healer_module = HealerModule(
             enabled=self.config.healer_enabled, 
@@ -184,10 +185,14 @@ class GladiBotApp(tk.Tk):
         spin_mob = ttk.Spinbox(grid_frame, from_=1, to=4, width=3, textvariable=self.var_mob, command=self.on_module_toggle)
         spin_mob.grid(row=0, column=2, sticky="w", padx=2)
 
-        # Dungeon toggle (WIP)
+        # Dungeon toggle
         self.var_dungeon = tk.BooleanVar(value=self.config.dungeon_enabled)
-        cb_dun = ttk.Checkbutton(grid_frame, text="Dungeons [WIP]", variable=self.var_dungeon, command=self.on_module_toggle)
+        cb_dun = ttk.Checkbutton(grid_frame, text="Dungeons (Map & Bosses)", variable=self.var_dungeon, command=self.on_module_toggle)
         cb_dun.grid(row=0, column=3, sticky="w", padx=(20, 6), pady=4)
+
+        self.var_dungeon_restart = tk.BooleanVar(value=self.config.dungeon_restart_on_loss)
+        cb_dun_restart = ttk.Checkbutton(grid_frame, text="Restart on Loss", variable=self.var_dungeon_restart, command=self.on_module_toggle)
+        cb_dun_restart.grid(row=0, column=4, sticky="w", padx=(6, 6), pady=4)
 
         # Healer toggle (WIP)
         self.var_heal = tk.BooleanVar(value=self.config.healer_enabled)
@@ -298,6 +303,7 @@ class GladiBotApp(tk.Tk):
         self.expedition_module.enabled = self.var_exp.get()
         self.expedition_module.target_mob_index = self.var_mob.get()
         self.dungeon_module.enabled = self.var_dungeon.get()
+        self.dungeon_module.restart_on_loss = self.var_dungeon_restart.get()
         self.healer_module.enabled = self.var_heal.get()
         self.healer_module.min_hp_percent = self.var_min_hp.get()
         self.auction_module.enabled = self.var_auction.get()
@@ -306,6 +312,7 @@ class GladiBotApp(tk.Tk):
         self.config.expedition_enabled = self.var_exp.get()
         self.config.expedition_mob_index = self.var_mob.get()
         self.config.dungeon_enabled = self.var_dungeon.get()
+        self.config.dungeon_restart_on_loss = self.var_dungeon_restart.get()
         self.config.healer_enabled = self.var_heal.get()
         self.config.min_hp_percent = self.var_min_hp.get()
         self.config.auction_enabled = self.var_auction.get()

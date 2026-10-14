@@ -58,6 +58,7 @@ class ExpeditionModule(BaseModule):
 
         try:
             # Step 1: Click the cooldown bar link to navigate to expedition
+            browser.log("[Expedition] Navigating to expedition via cooldown link...", "INFO")
             cooldown_link = page.locator(".cooldown_bar_link").first
             if cooldown_link.is_visible():
                 browser.human_move_and_click(page, ".cooldown_bar_link", pause_checker=can_continue)
@@ -71,20 +72,21 @@ class ExpeditionModule(BaseModule):
                 return ActionResult(success=False, message="Paused during navigation")
 
             # Step 2: Target the expedition box
-            # e.g., first box or configured index
+            browser.log(f"[Expedition] Targeting mob in box #{self.target_mob_index}...", "INFO")
             box_selector = f".expedition_box:nth-child({self.target_mob_index}) .expedition_button.awesome-button"
             attack_btn = page.locator(box_selector).first
 
             if not attack_btn.is_visible():
-                # Fallback to any button containing 'Saldır' or 'Attack'
                 attack_btn = page.locator(".expedition_button").filter(has_text="Saldır").first
                 if not attack_btn.is_visible():
                     attack_btn = page.locator(".expedition_button").filter(has_text="Attack").first
 
             if not attack_btn.is_visible():
+                browser.log("[Expedition] Attack button not found on expedition page.", "WARNING")
                 return ActionResult(success=False, message="Attack button not found on expedition page")
 
             # Step 3: Click attack
+            browser.log("[Expedition] Clicking attack button...", "INFO")
             box = attack_btn.bounding_box()
             if box:
                 page.mouse.move(
@@ -95,11 +97,13 @@ class ExpeditionModule(BaseModule):
             attack_btn.click()
             self.last_run_time = time.time()
             self.next_allowed_time = time.time() + 45.0  # Safe default until cooldown div updates
+            browser.log("[Expedition] Attack sent successfully!", "SUCCESS")
 
             # Step 4: Handle possible loot / reward popup
             browser.human_delay(1.0, 2.0, pause_checker=can_continue)
             loot_buttons = page.locator(".loot-button")
             if loot_buttons.count() >= 2:
+                browser.log("[Expedition] Reward/loot popup detected! Selecting second option...", "INFO")
                 second_loot = loot_buttons.nth(1)
                 if second_loot.is_visible():
                     loot_box = second_loot.bounding_box()
@@ -111,6 +115,7 @@ class ExpeditionModule(BaseModule):
                         )
                     second_loot.click()
                     browser.human_delay(1.0, 1.5, pause_checker=can_continue)
+                    browser.log("[Expedition] Second loot reward claimed successfully!", "SUCCESS")
 
             return ActionResult(
                 success=True, 

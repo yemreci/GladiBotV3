@@ -1,6 +1,6 @@
 import json
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, fields
 
 CONFIG_FILE = "bot_config.json"
 
@@ -14,6 +14,7 @@ class BotConfig:
     expedition_mob_index: int = 1
     
     dungeon_enabled: bool = False
+    dungeon_restart_on_loss: bool = False
     
     healer_enabled: bool = False
     min_hp_percent: int = 40
@@ -32,7 +33,9 @@ class BotConfig:
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    return cls(**data)
+                    valid_keys = {f.name for f in fields(cls)}
+                    filtered_data = {k: v for k, v in data.items() if k in valid_keys}
+                    return cls(**filtered_data)
             except Exception:
                 pass
         return cls()

@@ -1,5 +1,6 @@
 import random
 import time
+import re
 from typing import Optional, List, Any, Union
 from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext, Locator, TimeoutError as PlaywrightTimeoutError
 
@@ -45,6 +46,9 @@ class BrowserManager:
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
         
+        # Block slow/failing tracking scripts (e.g. pixelzirkus / pz.js) to speed up page loads
+        self._setup_request_blocking(self.context)
+
         # Listen for new pages / tabs opening (e.g. clicking play / _blank in lobby)
         self.context.on("page", self._on_page_created)
 
@@ -54,6 +58,31 @@ class BrowserManager:
         lobby_page.goto(self.url)
         self._is_initialized = True
         return lobby_page
+
+    def _setup_request_blocking(self, context: BrowserContext):
+        """
+        Blocks slow or failing tracking scripts (such as pixelzirkus pz.js) across all tabs.
+        Aborts matching requests immediately with ERR_BLOCKED_BY_CLIENT (matches uBlock Origin)
+        and injects a harmless stub so game pages never hit undefined function errors.
+        """
+        blocked_pattern = re.compile(r"pixelzirkus\.gameforge\.com|/static/js/pz\.js")
+
+        def handle_route(route):
+            try:
+                route.abort("blockedbyclient")
+            except Exception:
+                pass
+
+        context.route(blocked_pattern, handle_route)
+
+        # Safe defuser / stub in case inline game scripts call window.pz(...)
+        try:
+            context.add_init_script(
+                "window.pz = window.pz || function() {}; window.pixelzirkus = window.pixelzirkus || function() {};"
+            )
+        except Exception:
+            pass
+
 
     def _on_page_created(self, page: Page):
         """Internal callback whenever a new tab or window is opened."""
@@ -144,7 +173,6 @@ class BrowserManager:
             # Must contain in-game indicator:
             # 1. Any server starting with 's' (e.g., https://s58-tr..., https://s1-en..., https://s201...)
             # 2. Or query/path indicators: 'mod=' or '/game/'
-            import re
             has_server_prefix = bool(re.search(r"://s\d+.*\.gladiatus\.", url))
             has_game_mod = "mod=" in url or "/game/" in url
 
